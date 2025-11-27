@@ -20,8 +20,6 @@
 
 package github.scarsz.discordsrv.objects.threads;
 
-import alexh.weak.Dynamic;
-import github.scarsz.discordsrv.Debug;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import github.scarsz.discordsrv.util.PlaceholderUtil;
@@ -33,7 +31,6 @@ import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class ChannelUpdater extends Thread {
 
@@ -43,63 +40,9 @@ public class ChannelUpdater extends Thread {
         setName("DiscordSRV - Channel Updater");
     }
 
-    public void reload() {
-        // Deleting and recreating the list of updater channels
-        this.updaterChannels.clear();
-
-        final List<Map<?, ?>> configEntries = DiscordSRV.config().get("ChannelUpdater");
-
-        for (final Map<?, ?> configEntry : configEntries) {
-            Dynamic map = Dynamic.from(configEntry);
-            final String channelId = map.get("ChannelId").maybe().asString().orElse("");
-            final String format = map.get("Format").maybe().asString().orElse("");
-            final Optional<Integer> optionalInteger = map.get("UpdateInterval").maybe().as(Integer.class);
-            final String shutdownFormat = map.get("ShutdownFormat").maybe().asString().orElse("");
-            final int interval;
-
-            if (channelId.equals("0000000000000000")) continue; // Ignore default
-
-            if (StringUtils.isAnyBlank(channelId, format)) {
-                DiscordSRV.debug(Debug.CHANNEL_UPDATER, "Failed to initialise a ChannelUpdater entry: Missing either ChannelId or Format");
-                continue;
-            }
-            if (optionalInteger.isPresent()) {
-                interval = optionalInteger.get();
-            } else {
-                DiscordSRV.warning("Update interval in minutes provided for Updater Channel " + channelId + " was blank or invalid, using the minimum value of 10");
-                interval = 10;
-            }
-
-            final GuildChannel channel = DiscordUtil.getJda().getGuildChannelById(channelId);
-            if (channel == null) {
-                DiscordSRV.error("ChannelUpdater entry " + channelId + " has an invalid id");
-                continue;
-            }
-            DiscordSRV.debug(Debug.CHANNEL_UPDATER, "Initialising ChannelUpdater entry " + channelId);
-            UpdaterChannel updaterChannel = new UpdaterChannel(channel, format, interval, shutdownFormat);
-            this.updaterChannels.add(updaterChannel);
-            updaterChannel.update();
-        }
-    }
-
     @Override
     public void run() {
-        reload();
-        for (final UpdaterChannel channel : this.updaterChannels) {
-            channel.update();
-        }
-        while (true) {
-            try {
-                Thread.sleep(TimeUnit.MINUTES.toMillis(1));
-
-                for (final UpdaterChannel channel : this.updaterChannels) {
-                    channel.performTick();
-                }
-            } catch (InterruptedException e) {
-                DiscordSRV.debug(Debug.CHANNEL_UPDATER, "Broke from Channel Updater thread: sleep interrupted");
-                return;
-            }
-        }
+        return;
     }
 
     public static class UpdaterChannel {
@@ -167,16 +110,7 @@ public class ChannelUpdater extends Thread {
         }
 
         private void parseChannelName(GuildChannel discordChannel, String newName, boolean blockThread) {
-            if (newName.length() > MAX_CHANNEL_NAME) {
-                newName = newName.substring(0, MAX_CHANNEL_NAME - 1);
-                DiscordSRV.debug(Debug.CHANNEL_UPDATER, "The new channel name for \"" + discordChannel.getName() + "\" was too long. Reducing it to " + MAX_CHANNEL_NAME + " characters...");
-                if (StringUtils.isBlank(newName)) {
-                    DiscordSRV.debug(Debug.CHANNEL_UPDATER, "The new channel name for `\"" + discordChannel.getName() + "\" was blank, skipping...");
-                    return;
-                }
-            }
-
-            DiscordUtil.setChannelName(discordChannel, newName, blockThread);
+            return;
         }
     }
 
