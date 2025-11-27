@@ -4,7 +4,8 @@ on:
   push:
     branches:
       - develop
-
+  workflow_dispatch:
+  
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,7 +26,3 @@ jobs:
         with:
           name: build-artifacts
           path: "build/libs/*.jar"
-      - name: Deploy to Nexus
-        env:
-          REPO_PASSWORD: ${{ secrets.NEXUS_CI }}
-        run: ./gradlew publish --no-daemon
