@@ -49,7 +49,7 @@ public class DiscordAccountLinkListener extends ListenerAdapter {
         // don't process messages sent by the bot
         if (event.getAuthor().getId().equals(event.getJDA().getSelfUser().getId())) return;
 
-        DiscordSRV.api.callEvent(new DiscordPrivateMessageReceivedEvent(event));
+        // DiscordSRV.api.callEvent(new DiscordPrivateMessageReceivedEvent(event));
 
         // don't link accounts if config option is disabled
         if (!DiscordSRV.config().getBoolean("MinecraftDiscordAccountLinkedUsePM")) return;
